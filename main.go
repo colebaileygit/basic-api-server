@@ -17,22 +17,21 @@ func Routes() *gin.Engine {
 		globalRecover,
 	)
 	router.NoRoute(notFound)
-	// router.RedirectTrailingSlash = false
 
-	ordersEndpoint := router.Group("/orders") 
+	ordersEndpoint := router.Group("/orders")
 	{
 		ordersEndpoint.POST("", orders.PlaceOrder)
 		// router.Patch("/{orderId}", TakeOrder)
 		// router.Get("/", FetchOrders)
 	}
 
-	return router	
+	return router
 }
 
 func main() {
 	router := Routes()
 
-	// TODO: Update port to use ENV variable, add http timeouts etc. 
+	// TODO: Update port to use ENV variable, add http timeouts etc.
 	// https://medium.com/@nate510/don-t-use-go-s-default-http-client-4804cb19f779
 	// log.Fatal(http.ListenAndServe(":8080", router))
 	log.Fatal(router.Run())
@@ -40,15 +39,15 @@ func main() {
 
 // Handle downstream errors and gracefully return 500 error code
 func globalRecover(c *gin.Context) {
-    defer func(c *gin.Context) {
-        if rec := recover(); rec != nil {
+	defer func(c *gin.Context) {
+		if rec := recover(); rec != nil {
 			log.Printf("Panic encountered: %+v\n", rec)
 			c.JSON(http.StatusInternalServerError, types.ErrorResponse{
 				Description: "internal server error", //rec,
 			})
-        }
-    }(c)
-    c.Next()
+		}
+	}(c)
+	c.Next()
 }
 
 // Handle invalid routes or HTTP methods

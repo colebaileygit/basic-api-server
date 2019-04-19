@@ -55,18 +55,13 @@ func TestPlaceOrder(t *testing.T) {
 		payload     string
 	}{
 		{"valid-payload", 200, `{"origin": ["100", "100"], "destination": ["101", "101"]}`},
+		{"valid-payload-random-arg", 200, `{"origin": ["100", "100"], "destination": ["101", "101"], "version": 2.0}`},
 		{"invalid-payload-integers", 400, `{"origin": [100, 100], "destination": [101, 101]}`},
 		{"invalid-payload-floats", 400, `{"origin": [100.0, 100.0], "destination": [101.0, 101.0]}`},
 		{"invalid-payload-missing", 400, ""},
 		{"invalid-payload-empty", 400, "{}"},
 		{"invalid-payload-origin-missing", 400, `{"destination": ["101", "102"]}`},
 		{"invalid-payload-origin-empty", 400, `{"origin": [], "destination": ["101", "102"]}`},
-		{"invalid-payload-origin-toofew", 400, `{"origin": ["101"], "destination": ["101", "102"]}`},
-		{"invalid-payload-origin-toomany", 400, `{"origin": ["101", "103", "104"], "destination": ["101", "102"]}`},
-		{"invalid-payload-dest-missing", 400, `{"origin": ["101", "102"]}`},
-		{"invalid-payload-dest-empty", 400, `{"destination": [], "origin": ["101", "102"]}`},
-		{"invalid-payload-dest-toofew", 400, `{"destination": ["101"], "origin": ["101", "102"]}`},
-		{"invalid-payload-dest-toomany", 400, `{"destination": ["101", "103", "104"], "origin": ["101", "102"]}`},
 	}
 
 	for _, testCase := range testCases {
