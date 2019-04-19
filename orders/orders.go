@@ -1,38 +1,46 @@
 package orders
 
 import (
+	// "log"
 	"net/http"
+	// "io/ioutil"
+	// "encoding/json"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/render"
+	"github.com/gin-gonic/gin"
+
+	"github.com/colebaileygit/basic-api-server/types"
 )
 
-func Routes() *chi.Mux {
-	router := chi.NewRouter()
+func PlaceOrder(c *gin.Context) {
+	// body, readErr := ioutil.ReadAll(r.Body)
+	// if readErr != nil {
+	// 	log.Panic(readErr)
+	// }
 
-	router.Post("/", PlaceOrder)
-	// router.Patch("/{orderId}", TakeOrder)
-	// router.Get("/", FetchOrders)
+	// log.Printf("%+v\n", string(body))
 
-	return router
-}
+	// params := types.PlaceOrderParams{}
+	// jsonErr := json.Unmarshal(body, &params)
+	// if jsonErr != nil {
+	// 	// TODO: Output proper error message and code for incorrect params
+	// 	log.Panic(jsonErr)
+	// }
 
-func PlaceOrder(w http.ResponseWriter, r *http.Request) {
-	order := Order{
+	// log.Printf("%+v\n", params)
+
+	var params types.PlaceOrderParams
+	if err := c.ShouldBindJSON(&params); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Description: err.Error(),
+		})
+		return
+	}
+
+	order := types.OrderResponse{
 		ID: "1",
 		Distance: 50,
 		Status: "UNASSIGNED",
 	}
 
-	render.JSON(w, r, order)
-}
-
-type Order struct {
-	ID string `json:"id"`
-	Distance int64 `json:"distance"`
-	Status string `json:"status"`
-}
-
-type ErrorResponse struct {
-	Description string `json:"error"`
+	c.JSON(http.StatusOK, order)
 }
