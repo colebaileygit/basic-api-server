@@ -12,22 +12,6 @@ import (
 )
 
 func PlaceOrder(c *gin.Context) {
-	// body, readErr := ioutil.ReadAll(r.Body)
-	// if readErr != nil {
-	// 	log.Panic(readErr)
-	// }
-
-	// log.Printf("%+v\n", string(body))
-
-	// params := types.PlaceOrderParams{}
-	// jsonErr := json.Unmarshal(body, &params)
-	// if jsonErr != nil {
-	// 	// TODO: Output proper error message and code for incorrect params
-	// 	log.Panic(jsonErr)
-	// }
-
-	// log.Printf("%+v\n", params)
-
 	var params types.PlaceOrderParams
 	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
@@ -36,10 +20,17 @@ func PlaceOrder(c *gin.Context) {
 		return
 	}
 
+	if params.Origin == nil || params.Destination == nil || len(params.Origin) != 2 || len(params.Destination) != 2 {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Description: "JSON payload 'origin' or 'destination' was missing or did not contain exactly 2 values [latitude, longitude]",
+		})
+		return
+	}
+
 	order := types.OrderResponse{
-		ID: "1",
+		ID:       "1",
 		Distance: 50,
-		Status: "UNASSIGNED",
+		Status:   "UNASSIGNED",
 	}
 
 	c.JSON(http.StatusOK, order)
