@@ -1,0 +1,29 @@
+version: '3'
+services:
+  db:
+    image: mysql:5.7
+    restart: on-failure
+    environment:
+      # MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_DATABASE: order-app
+      MYSQL_USER: order-admin
+      MYSQL_PASSWORD: 9X2mhC7CUrCtjJXH
+    ports:
+      - '3306:3306'
+    volumes:
+      - api-db:/var/lib/mysql
+  app:
+    build:
+      context: app
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    depends_on: 
+      - db
+    environment:
+      PORT: 8080
+      GOOGLE_API_KEY: <INSERT_KEY_HERE>
+      MYSQL_USER: order-admin
+      MYSQL_PASSWORD: 9X2mhC7CUrCtjJXH
+volumes:
+  api-db:

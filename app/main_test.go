@@ -12,6 +12,7 @@ import (
 	"github.com/colebaileygit/basic-api-server/types"
 )
 
+// Test that correct routes are setup
 func TestRoutes(t *testing.T) {
 	router := Routes()
 
@@ -38,14 +39,16 @@ func TestRoutes(t *testing.T) {
 			checkResponseCode(t, testCase.code, response.Code)
 
 			if testCase.code != 307 {
-				checkHeader(t, "application/json; charset=utf-8", response.Header()["Content-Type"])
+				success := checkHeader(t, "application/json; charset=utf-8", response.Header()["Content-Type"])
+				if !success {
+					t.Logf("Response body: %s\n", response.Body.String())
+				}
 			}
-
-			t.Logf("Response body: %s\n", response.Body.String())
 		})
 	}
 }
 
+// Test parsing of user params sent over HTTP
 func TestPlaceOrder(t *testing.T) {
 	router := Routes()
 
@@ -96,7 +99,7 @@ func checkResponseCode(t *testing.T, expected int, actual int) {
 	}
 }
 
-func checkHeader(t *testing.T, expected string, actual []string) {
+func checkHeader(t *testing.T, expected string, actual []string) bool {
 	found := false
 	for _, header := range actual {
 		if expected == header {
@@ -107,6 +110,7 @@ func checkHeader(t *testing.T, expected string, actual []string) {
 	if !found {
 		t.Errorf("Expected header %s, but actual is %v\n", expected, actual)
 	}
+	return found
 }
 
 func checkBody(t *testing.T, expected interface{}, request *httptest.ResponseRecorder) {
