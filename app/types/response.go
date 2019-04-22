@@ -5,12 +5,12 @@ type ErrorResponse struct {
 }
 
 type OrderResponse struct {
-	ID string `json:"id"`
-	Distance int64 `json:"distance"`
-	Status string `json:"status"`
+	ID       string `json:"id"`
+	Distance int    `json:"distance"`
+	Status   string `json:"status"`
 }
 
 type PlaceOrderParams struct {
-	Origin []string `json:"origin"`
+	Origin      []string `json:"origin"`
 	Destination []string `json:"destination"`
 }

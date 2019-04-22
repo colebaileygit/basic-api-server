@@ -13,13 +13,19 @@ func TestValidatePlaceOrderParams(t *testing.T) {
 		origin      []string
 		destination []string
 	}{
-		{"valid-payload", true, []string{"100", "102"}, []string{"103", "104"}},
-		{"invalid-payload-origin-toofew", false, []string{"101"}, []string{"101", "102"}},
-		{"invalid-payload-origin-toomany", false, []string{"101", "103", "104"}, []string{"101", "102"}},
-		{"invalid-payload-origin-empty", false, []string{}, []string{"101", "102"}},
-		{"invalid-payload-dest-empty", false, []string{"101", "102"}, []string{}},
-		{"invalid-payload-dest-toofew", false, []string{"101", "102"}, []string{"101"}},
-		{"invalid-payload-dest-toomany", false, []string{"101", "102"}, []string{"101", "103", "104"}},
+		{"valid-payload", true, []string{"22", "102"}, []string{"23", "104"}},
+		{"valid-payload", true, []string{"-22", "102"}, []string{"23", "104"}},
+		{"invalid-payload-format", false, []string{"22,3", "52"}, []string{"24", "53"}},
+		{"invalid-payload-origin-toofew", false, []string{"22"}, []string{"22", "102"}},
+		{"invalid-payload-origin-toomany", false, []string{"22", "103", "104"}, []string{"22", "102"}},
+		{"invalid-payload-origin-empty", false, []string{}, []string{"22", "102"}},
+		{"invalid-payload-dest-empty", false, []string{"22", "102"}, []string{}},
+		{"invalid-payload-dest-toofew", false, []string{"22", "102"}, []string{"22"}},
+		{"invalid-payload-dest-toomany", false, []string{"22", "102"}, []string{"22", "103", "104"}},
+		{"invalid-payload-lat-bounds", false, []string{"-91", "100"}, []string{"-90", "99"}},
+		{"invalid-payload-lat-bounds", false, []string{"90", "100"}, []string{"91", "99"}},
+		{"invalid-payload-lng-bounds", false, []string{"53", "180"}, []string{"53", "181"}},
+		{"invalid-payload-lng-bounds", false, []string{"53", "-181"}, []string{"53", "-180"}},
 	}
 
 	for _, testCase := range testCases {

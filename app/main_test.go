@@ -22,8 +22,8 @@ func TestRoutes(t *testing.T) {
 		code    int
 		payload string
 	}{
-		{"/orders", "POST", 200, `{"origin": ["100", "100"], "destination": ["101", "101"]}`},
-		{"/orders/", "POST", 307, `{"origin": ["100", "100"], "destination": ["101", "101"]}`},
+		{"/orders", "POST", 200, `{"origin": ["23", "100"], "destination": ["24", "101"]}`},
+		{"/orders/", "POST", 307, `{"origin": ["23", "100"], "destination": ["24", "101"]}`},
 		{"/orders/1", "POST", 404, ""},
 		// {"/order", 		"POST", 	404, 	""},
 		// {"/",			"POST", 	404, 	""},
@@ -57,14 +57,14 @@ func TestPlaceOrder(t *testing.T) {
 		code        int
 		payload     string
 	}{
-		{"valid-payload", 200, `{"origin": ["100", "100"], "destination": ["101", "101"]}`},
-		{"valid-payload-random-arg", 200, `{"origin": ["100", "100"], "destination": ["101", "101"], "version": 2.0}`},
-		{"invalid-payload-integers", 400, `{"origin": [100, 100], "destination": [101, 101]}`},
-		{"invalid-payload-floats", 400, `{"origin": [100.0, 100.0], "destination": [101.0, 101.0]}`},
+		{"valid-payload", 200, `{"origin": ["23", "100"], "destination": ["24", "101"]}`},
+		{"valid-payload-random-arg", 200, `{"origin": ["23", "100"], "destination": ["24", "101"], "version": 2.0}`},
+		{"invalid-payload-integers", 400, `{"origin": [23, 100], "destination": [24, 101]}`},
+		{"invalid-payload-floats", 400, `{"origin": [23.0, 100.0], "destination": [24.0, 101.0]}`},
 		{"invalid-payload-missing", 400, ""},
 		{"invalid-payload-empty", 400, "{}"},
-		{"invalid-payload-origin-missing", 400, `{"destination": ["101", "102"]}`},
-		{"invalid-payload-origin-empty", 400, `{"origin": [], "destination": ["101", "102"]}`},
+		{"invalid-payload-origin-missing", 400, `{"destination": ["24", "102"]}`},
+		{"invalid-payload-origin-empty", 400, `{"origin": [], "destination": ["24", "102"]}`},
 	}
 
 	for _, testCase := range testCases {
