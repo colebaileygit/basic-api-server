@@ -1,12 +1,18 @@
 # Basic API Server
 
-## Setup
+## Quick Start
 
-First, set your Google Maps API key via:
+1. set your Google Maps API key via:
 
-```
-export GOOGLE_API_KEY="<INSERT KEY HERE>"
-```
+    ```bash
+    export GOOGLE_API_KEY="<INSERT KEY HERE>"
+    ```
+
+2. Run startup script including all unit and integration tests:
+
+    ```bash
+    sh start.sh
+    ```
 
 ## Running API service
 
@@ -15,7 +21,7 @@ export GOOGLE_API_KEY="<INSERT KEY HERE>"
 Recommended for automatic management of database, build-args, ports, etc.
 
 ```bash
-docker-compose up
+docker-compose up --build app
 ```
 
 ### From Docker
@@ -30,6 +36,17 @@ docker run --rm -p 8080:8080 basic-api
 ```bash
 go get
 go run main.go
+```
+
+## Database Migrations
+
+Migration are run automatically to latest version on app start.
+
+To reset / drop database for testing on a clean slate, run
+
+```bash
+docker-compose down
+docker volume rm basic-api-server_api-db
 ```
 
 ## Testing

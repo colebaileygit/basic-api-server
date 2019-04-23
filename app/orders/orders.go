@@ -2,6 +2,7 @@ package orders
 
 import (
 	// "log"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -31,6 +32,7 @@ func PlaceOrder(c *gin.Context) {
 
 	distance, err := CalculateDistance(params)
 	if err != nil {
+		log.Print(err)
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
 			Description: "Distance between provided origin and destination could not be calculated.",
 		})

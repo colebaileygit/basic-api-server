@@ -81,8 +81,6 @@ func TestPlaceOrder(t *testing.T) {
 			case 400:
 				checkBody(t, types.ErrorResponse{}, response)
 			}
-
-			t.Logf("Response body: %s\n", response.Body.String())
 		})
 	}
 }
