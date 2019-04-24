@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/colebaileygit/basic-api-server/database"
@@ -28,7 +26,7 @@ func Routes() *gin.Engine {
 	{
 		ordersEndpoint.POST("", orders.PlaceOrder)
 		ordersEndpoint.PATCH("/:id", orders.TakeOrder)
-		ordersEndpoint.GET("/", orders.FetchOrders)
+		ordersEndpoint.GET("", orders.FetchOrders)
 	}
 
 	return router
@@ -39,26 +37,13 @@ func main() {
 
 	runDatabaseMigrations()
 
-	// TODO: Update port to use ENV variable, add http timeouts etc.
+	// TODO: add http timeouts etc.
 	// https://medium.com/@nate510/don-t-use-go-s-default-http-client-4804cb19f779
 	log.Fatal(router.Run())
 }
 
 func runDatabaseMigrations() {
-	database.Init()
-
-	driver, err := mysql.WithInstance(database.DBCon, &mysql.Config{})
-	if err != nil {
-		log.Fatalf("Could not start SQL migration: %v", err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		fmt.Sprintf("file://%s", "./migrations"),
-		"mysql", driver)
-
-	if err != nil {
-		log.Fatalf("Migration failed: %v", err)
-	}
+	m := database.InitMigrator()
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("An error occurred while syncing the database: %v", err)

@@ -1,17 +1,5 @@
-version: '3'
+version: '3.7'
 services:
-  db:
-    image: mysql:5.7
-    restart: on-failure
-    environment:
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
-      - MYSQL_DATABASE=order-app
-      - MYSQL_USER=order-admin
-      - MYSQL_PASSWORD=9X2mhC7CUrCtjJXH
-    ports:
-      - '3306:3306'
-    volumes:
-      - api-db:/var/lib/mysql
   app:
     build:
       context: app
@@ -24,6 +12,37 @@ services:
     depends_on: 
       - db
     environment:
+      - MYSQL_ADDRESS=db
+      - MYSQL_DATABASE=order-app
+      - MYSQL_USER=order-admin
+      - MYSQL_PASSWORD=9X2mhC7CUrCtjJXH
+  tester:
+    build:
+      context: app
+      args:
+        - GOOGLE_API_KEY
+      target: tester
+    depends_on: 
+      - test-db
+    environment:
+    - MYSQL_ADDRESS=test-db
+    - MYSQL_DATABASE=order-app
+    - MYSQL_USER=order-admin
+    - MYSQL_PASSWORD=9X2mhC7CUrCtjJXH
+  db:
+    image: mysql:5.7
+    restart: on-failure
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MYSQL_DATABASE=order-app
+      - MYSQL_USER=order-admin
+      - MYSQL_PASSWORD=9X2mhC7CUrCtjJXH
+    volumes:
+      - api-db:/var/lib/mysql
+  test-db:
+    image: mysql:5.7
+    environment: 
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
       - MYSQL_DATABASE=order-app
       - MYSQL_USER=order-admin
       - MYSQL_PASSWORD=9X2mhC7CUrCtjJXH

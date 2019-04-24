@@ -1,6 +1,5 @@
 # Build stage compiles golang binary
 FROM golang:1.12 as builder
-ARG GOOGLE_API_KEY
 
 WORKDIR /basic-api-server
 COPY go.mod ./go.mod
@@ -9,14 +8,21 @@ RUN go mod download
 
 COPY . .
 
-ENV GOOGLE_API_KEY ${GOOGLE_API_KEY}
-
-RUN go test -v ./...
 RUN CGO_ENABLED=0 GOOS=linux go build -o serve
 
 # Create certs needed to query external APIs
 FROM alpine:latest as certs
 RUN apk --no-cache add ca-certificates
+
+# Runs unit tests and integration tests
+FROM builder as tester
+ARG GOOGLE_API_KEY
+
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+ENV GOOGLE_API_KEY ${GOOGLE_API_KEY}
+
+CMD ["go", "test", "./..."]
 
 # Final stage prepares minimized image for serving
 FROM scratch

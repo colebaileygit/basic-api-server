@@ -5,9 +5,9 @@ then
     exit 1
 fi
 
-# Run unit tests and prepare app image
-docker-compose build app
+# Run test suite
+docker-compose up --build tester
+docker-compose stop test-db
 
-docker-compose up -d app
-
-# TODO: Run integration tests
+# Serve 
+docker-compose up --build app
