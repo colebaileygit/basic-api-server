@@ -84,7 +84,7 @@ func TestPlaceOrderParams(t *testing.T) {
 			switch testCase.code {
 			case 200:
 				checkBody(t, types.OrderResponse{}, response)
-			case 400, 500:
+			default:
 				checkBody(t, types.ErrorResponse{}, response)
 			}
 		})
@@ -97,20 +97,26 @@ func TestTakeOrderParams(t *testing.T) {
 	testCases := []struct {
 		description string
 		code        int
+		id			string
 		payload     string
 	}{
 		// Valid requests return 500 on unit tests because of missing DB
-		{"valid-payload", 500, `{"status": "TAKEN"}`},
-		{"valid-payload-random-arg", 500, `{"status": "TAKEN", "version": 2.0}`},
-		{"invalid-payload-unassigned", 400, `{"status": "ASSIGNED"}`},
-		{"invalid-payload-assigned", 400, `{"status": "UNASSIGNED"}`},
-		{"invalid-payload-missing", 400, ""},
-		{"invalid-payload-empty", 400, "{}"},
+		{"valid-payload", 500, "1", `{"status": "TAKEN"}`},
+		{"valid-payload-string-id", 500, "test", `{"status": "TAKEN"}`},
+		{"valid-payload-float-id", 500, "1.0", `{"status": "TAKEN"}`},
+		{"valid-payload-negative-id", 500, "-1", `{"status": "TAKEN"}`},
+		{"valid-payload-random-arg", 500, "1", `{"status": "TAKEN", "version": 2.0}`},
+		{"invalid-payload-unassigned", 400, "1", `{"status": "ASSIGNED"}`},
+		{"invalid-payload-assigned", 400, "1", `{"status": "UNASSIGNED"}`},
+		{"invalid-payload-missing", 400, "1", ""},
+		{"invalid-payload-empty", 400, "1", "{}"},
+		{"invalid-no-id", 404, "", "{}"},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.description, func(t *testing.T) {
-			response := executeNewRequest(router, "PATCH", "/orders/1", testCase.payload)
+			url := fmt.Sprintf("/orders/%s", testCase.id)
+			response := executeNewRequest(router, "PATCH", url, testCase.payload)
 
 			checkResponseCode(t, testCase.code, response.Code)
 			checkHeader(t, "application/json; charset=utf-8", response.Header()["Content-Type"])
@@ -118,7 +124,7 @@ func TestTakeOrderParams(t *testing.T) {
 			switch testCase.code {
 			case 200:
 				checkBody(t, types.TakeOrderResponse{}, response)
-			case 400, 500:
+			default:
 				checkBody(t, types.ErrorResponse{}, response)
 			}
 		})
@@ -139,6 +145,7 @@ func TestFetchOrdersParams(t *testing.T) {
 		{"valid-payload-missing", 500, ""},
 		{"invalid-payload-negativepage", 400, `page=-1`},
 		{"invalid-payload-zerolimit", 400, `limit=0`},
+		{"invalid-payload-noninteger", 400, `page=a&limit=b`},
 	}
 
 	for _, testCase := range testCases {
@@ -152,7 +159,7 @@ func TestFetchOrdersParams(t *testing.T) {
 			switch testCase.code {
 			case 200:
 				checkBody(t, types.FetchOrdersResponse{}, response)
-			case 400, 500:
+			default:
 				checkBody(t, types.ErrorResponse{}, response)
 			}
 		})
