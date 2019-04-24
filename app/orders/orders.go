@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/colebaileygit/basic-api-server/database"
 	"github.com/colebaileygit/basic-api-server/types"
 )
 
@@ -39,15 +40,48 @@ func PlaceOrder(c *gin.Context) {
 		return
 	}
 
-	// TODO: Execute DB transaction
+	if !validateDatabaseConnection(c) {
+		return
+	}
+
+	orderStatus := "UNASSIGNED"
+	res, err := database.DBCon.Exec("INSERT INTO orders (distance, order_status) VALUES (?, ?)",
+		distance, orderStatus)
+
+	if err != nil {
+		log.Print(err)
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Description: "Failed to save order to database.",
+		})
+		return
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Print(err)
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Description: "Failed to save order to database.",
+		})
+		return
+	}
 
 	order := types.OrderResponse{
-		ID:       "1",
+		ID:       id,
 		Distance: distance,
-		Status:   "UNASSIGNED",
+		Status:   orderStatus,
 	}
 
 	c.JSON(http.StatusOK, order)
+}
+
+func validateDatabaseConnection(c *gin.Context) bool {
+	if database.DBCon == nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Description: "Database connection not established.",
+		})
+		return false
+	}
+	return true
 }
 
 func validatePlaceOrderParams(params types.PlaceOrderParams) bool {
@@ -78,6 +112,116 @@ func validateLng(val string) bool {
 	return longitude >= -180 && longitude <= 180
 }
 
-// TODO: Assign order
+func TakeOrder(c *gin.Context) {
+	id := c.Param("id")
 
-// TODO: Fetch orders
+	var params types.TakeOrderParams
+	if err := c.ShouldBindJSON(&params); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Description: "JSON payload could not be parsed.",
+		})
+		return
+	}
+
+	if !validateTakeOrderParams(params) {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Description: "JSON payload 'status' value was not valid.",
+		})
+		return
+	}
+
+	if !validateDatabaseConnection(c) {
+		return
+	}
+
+	res, err := database.DBCon.Exec("UPDATE orders SET order_status=? WHERE id=? AND order_status='UNASSIGNED'",
+		params.Status, id)
+
+	if err != nil {
+		log.Print(err)
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Description: "Failed to update order in database.",
+		})
+		return
+	}
+
+	numRows, err := res.RowsAffected()
+	if err != nil || numRows == 0 {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Description: "Failed to update order in database.",
+		})
+		return
+	}
+
+	response := types.TakeOrderResponse{
+		Status: "SUCCESS",
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+func validateTakeOrderParams(params types.TakeOrderParams) bool {
+	return params.Status == "TAKEN"
+}
+
+func FetchOrders(c *gin.Context) {
+	pageArg := c.DefaultQuery("page", "0")
+	limitArg := c.DefaultQuery("limit", "10")
+
+	page, err := strconv.ParseInt(pageArg, 10, 64)
+	if err != nil || page < 0 {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Description: "Invalid page argument. Please provide an integer value >= 0.",
+		})
+		return
+	}
+
+	limit, err := strconv.ParseInt(limitArg, 10, 64)
+	if err != nil || limit < 1 {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Description: "Invalid limit argument. Please provide an integer value >= 1.",
+		})
+		return
+	}
+
+	if !validateDatabaseConnection(c) {
+		return
+	}
+
+	response := types.FetchOrdersResponse{}
+
+	rows, err := database.DBCon.Query("SELECT id, distance, order_status FROM orders LIMIT ?, ?",
+		limit*page, limit)
+	if err != nil {
+		log.Print(err)
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Description: "Failed to fetch orders from database.",
+		})
+		return
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		order := &types.OrderResponse{}
+
+		err := rows.Scan(&order.ID, &order.Distance, &order.Status)
+		if err != nil {
+			log.Print(err)
+			c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+				Description: "Failed to fetch orders from database.",
+			})
+			return
+		}
+		response = append(response, *order)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Print(err)
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Description: "Failed to fetch orders from database.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}

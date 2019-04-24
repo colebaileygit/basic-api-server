@@ -1,11 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -13,6 +11,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
+	"github.com/colebaileygit/basic-api-server/database"
 	"github.com/colebaileygit/basic-api-server/orders"
 	"github.com/colebaileygit/basic-api-server/types"
 )
@@ -28,8 +27,8 @@ func Routes() *gin.Engine {
 	ordersEndpoint := router.Group("/orders")
 	{
 		ordersEndpoint.POST("", orders.PlaceOrder)
-		// router.Patch("/{orderId}", TakeOrder)
-		// router.Get("/", FetchOrders)
+		ordersEndpoint.PATCH("/:id", orders.TakeOrder)
+		ordersEndpoint.GET("/", orders.FetchOrders)
 	}
 
 	return router
@@ -46,19 +45,9 @@ func main() {
 }
 
 func runDatabaseMigrations() {
-	mysqlDsn := fmt.Sprintf("%s:%s@tcp(%s)/%s",
-		os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASSWORD"), "db", os.Getenv("MYSQL_DATABASE"))
+	database.Init()
 
-	db, err := sql.Open("mysql", mysqlDsn)
-	if err != nil {
-		log.Fatalf("Could not connect to the MySQL database: %v", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		log.Fatalf("Could not ping DB: %v", err)
-	}
-
-	driver, err := mysql.WithInstance(db, &mysql.Config{})
+	driver, err := mysql.WithInstance(database.DBCon, &mysql.Config{})
 	if err != nil {
 		log.Fatalf("Could not start SQL migration: %v", err)
 	}
