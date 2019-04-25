@@ -14,6 +14,10 @@ import (
 )
 
 func CalculateDistance(params types.PlaceOrderParams) (distance int, err error) {
+	if !validatePlaceOrderParams(params) {
+		return 0, fmt.Errorf("Distance params were not valid: %+v", params)
+	}
+
 	client, err := maps.NewClient(maps.WithAPIKey(os.Getenv("GOOGLE_API_KEY")))
 	if err != nil {
 		log.Panicf("Google Maps client could not be initialized: %s\n", err)
@@ -24,8 +28,6 @@ func CalculateDistance(params types.PlaceOrderParams) (distance int, err error) 
 		Destinations: []string{strings.Join(params.Destination, ",")},
 	}
 
-	// log.Printf("Request: %s | %+v\n", request.Origins[0], request)
-
 	distanceMatrix, err := client.DistanceMatrix(context.Background(), request)
 
 	if err != nil {
@@ -35,8 +37,6 @@ func CalculateDistance(params types.PlaceOrderParams) (distance int, err error) 
 	if distanceMatrix.Rows == nil || len(distanceMatrix.Rows) == 0 || len(distanceMatrix.Rows[0].Elements) == 0 {
 		return 0, fmt.Errorf("Google Maps result did not contain distance value: %+v\n", distanceMatrix)
 	}
-
-	// log.Printf("Distances: %+v\n", distanceMatrix.Rows[0].Elements[0])
 
 	element := distanceMatrix.Rows[0].Elements[0]
 

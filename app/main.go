@@ -37,8 +37,6 @@ func main() {
 
 	runDatabaseMigrations()
 
-	// TODO: add http timeouts etc.
-	// https://medium.com/@nate510/don-t-use-go-s-default-http-client-4804cb19f779
 	log.Fatal(router.Run())
 }
 
@@ -58,7 +56,7 @@ func globalRecover(c *gin.Context) {
 		if rec := recover(); rec != nil {
 			log.Printf("Panic encountered: %+v\n", rec)
 			c.JSON(http.StatusInternalServerError, types.ErrorResponse{
-				Description: "internal server error", //rec,
+				Description: "Internal server error",
 			})
 		}
 	}(c)
@@ -68,6 +66,6 @@ func globalRecover(c *gin.Context) {
 // Handle invalid routes or HTTP methods
 func notFound(c *gin.Context) {
 	c.JSON(http.StatusNotFound, types.ErrorResponse{
-		Description: "route is invalid for given request",
+		Description: "Route is invalid for given request",
 	})
 }

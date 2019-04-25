@@ -25,8 +25,14 @@ func setupTestDB(t *testing.T) func(t *testing.T) {
 		m := database.InitMigrator()
 
 		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
-			log.Fatalf("An error occurred while syncing the database: %v", err)
+			log.Fatalf("An error occurred while resetting the database: %v", err)
 		}
+
+		err := database.DBCon.Close()
+		if err != nil {
+			log.Fatalf("An error occurred while closing the database: %v", err)
+		}
+		database.DBCon = nil
 	}
 }
 

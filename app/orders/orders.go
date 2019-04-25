@@ -33,7 +33,7 @@ func PlaceOrder(c *gin.Context) {
 
 	distance, err := CalculateDistance(params)
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
 			Description: "Distance between provided origin and destination could not be calculated.",
 		})
@@ -49,7 +49,7 @@ func PlaceOrder(c *gin.Context) {
 		distance, orderStatus)
 
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
 			Description: "Failed to save order to database.",
 		})
@@ -58,7 +58,7 @@ func PlaceOrder(c *gin.Context) {
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
 			Description: "Failed to save order to database.",
 		})
@@ -72,44 +72,6 @@ func PlaceOrder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, order)
-}
-
-func validateDatabaseConnection(c *gin.Context) bool {
-	if database.DBCon == nil {
-		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
-			Description: "Database connection not established.",
-		})
-		return false
-	}
-	return true
-}
-
-func validatePlaceOrderParams(params types.PlaceOrderParams) bool {
-	return params.Origin != nil &&
-		params.Destination != nil &&
-		len(params.Origin) == 2 &&
-		len(params.Destination) == 2 &&
-		validateLat(params.Origin[0]) && validateLng(params.Origin[1]) &&
-		validateLat(params.Destination[0]) && validateLng(params.Destination[1])
-
-}
-
-func validateLat(val string) bool {
-	latitude, err := strconv.ParseFloat(val, 64)
-	if err != nil {
-		return false
-	}
-
-	return latitude >= -90 && latitude <= 90
-}
-
-func validateLng(val string) bool {
-	longitude, err := strconv.ParseFloat(val, 64)
-	if err != nil {
-		return false
-	}
-
-	return longitude >= -180 && longitude <= 180
 }
 
 func TakeOrder(c *gin.Context) {
@@ -158,10 +120,6 @@ func TakeOrder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
-}
-
-func validateTakeOrderParams(params types.TakeOrderParams) bool {
-	return params.Status == "TAKEN"
 }
 
 func FetchOrders(c *gin.Context) {
@@ -224,4 +182,46 @@ func FetchOrders(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+func validateDatabaseConnection(c *gin.Context) bool {
+	if database.DBCon == nil {
+		c.JSON(http.StatusServiceUnavailable, types.ErrorResponse{
+			Description: "Database connection not established.",
+		})
+		return false
+	}
+	return true
+}
+
+func validatePlaceOrderParams(params types.PlaceOrderParams) bool {
+	return params.Origin != nil &&
+		params.Destination != nil &&
+		len(params.Origin) == 2 &&
+		len(params.Destination) == 2 &&
+		validateLat(params.Origin[0]) && validateLng(params.Origin[1]) &&
+		validateLat(params.Destination[0]) && validateLng(params.Destination[1])
+
+}
+
+func validateLat(val string) bool {
+	latitude, err := strconv.ParseFloat(val, 64)
+	if err != nil {
+		return false
+	}
+
+	return latitude >= -90 && latitude <= 90
+}
+
+func validateLng(val string) bool {
+	longitude, err := strconv.ParseFloat(val, 64)
+	if err != nil {
+		return false
+	}
+
+	return longitude >= -180 && longitude <= 180
+}
+
+func validateTakeOrderParams(params types.TakeOrderParams) bool {
+	return params.Status == "TAKEN"
 }

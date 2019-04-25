@@ -24,12 +24,12 @@ func TestRoutes(t *testing.T) {
 		code    int
 		payload string
 	}{
-		// Valid requests return 500 on unit tests because of missing DB
-		{"/orders", 	"POST", 	500, 	`{"origin": ["23", "100"], "destination": ["24", "101"]}`},
+		// Valid requests return 503 on unit tests because of missing DB
+		{"/orders", 	"POST", 	503, 	`{"origin": ["23", "100"], "destination": ["24", "101"]}`},
 		{"/orders/", 	"POST", 	307, 	`{"origin": ["23", "100"], "destination": ["24", "101"]}`},
-		{"/orders/0", 	"PATCH", 	500, 	`{"status": "TAKEN"}`},
+		{"/orders/0", 	"PATCH", 	503, 	`{"status": "TAKEN"}`},
 		{"/orders/0/", 	"PATCH", 	307, 	`{"status": "TAKEN"}`},
-		{"/orders", 	"GET", 		500, 	""},
+		{"/orders", 	"GET", 		503, 	""},
 		{"/orders/", 	"GET", 		301, 	""},
 		{"/orders/1", 	"POST", 	404, 	""},
 		{"/orders", 	"PATCH", 	404, 	""},
@@ -64,8 +64,8 @@ func TestPlaceOrderParams(t *testing.T) {
 		payload     string
 	}{
 		// Valid requests return 500 on unit tests because of missing DB
-		{"valid-payload", 500, `{"origin": ["23", "100"], "destination": ["24", "101"]}`},
-		{"valid-payload-random-arg", 500, `{"origin": ["23", "100"], "destination": ["24", "101"], "version": 2.0}`},
+		{"valid-payload", 503, `{"origin": ["23", "100"], "destination": ["24", "101"]}`},
+		{"valid-payload-random-arg", 503, `{"origin": ["23", "100"], "destination": ["24", "101"], "version": 2.0}`},
 		{"invalid-payload-integers", 400, `{"origin": [23, 100], "destination": [24, 101]}`},
 		{"invalid-payload-floats", 400, `{"origin": [23.0, 100.0], "destination": [24.0, 101.0]}`},
 		{"invalid-payload-missing", 400, ""},
@@ -101,11 +101,11 @@ func TestTakeOrderParams(t *testing.T) {
 		payload     string
 	}{
 		// Valid requests return 500 on unit tests because of missing DB
-		{"valid-payload", 500, "1", `{"status": "TAKEN"}`},
-		{"valid-payload-string-id", 500, "test", `{"status": "TAKEN"}`},
-		{"valid-payload-float-id", 500, "1.0", `{"status": "TAKEN"}`},
-		{"valid-payload-negative-id", 500, "-1", `{"status": "TAKEN"}`},
-		{"valid-payload-random-arg", 500, "1", `{"status": "TAKEN", "version": 2.0}`},
+		{"valid-payload", 503, "1", `{"status": "TAKEN"}`},
+		{"valid-payload-string-id", 503, "test", `{"status": "TAKEN"}`},
+		{"valid-payload-float-id", 503, "1.0", `{"status": "TAKEN"}`},
+		{"valid-payload-negative-id", 503, "-1", `{"status": "TAKEN"}`},
+		{"valid-payload-random-arg", 503, "1", `{"status": "TAKEN", "version": 2.0}`},
 		{"invalid-payload-unassigned", 400, "1", `{"status": "ASSIGNED"}`},
 		{"invalid-payload-assigned", 400, "1", `{"status": "UNASSIGNED"}`},
 		{"invalid-payload-missing", 400, "1", ""},
@@ -140,9 +140,9 @@ func TestFetchOrdersParams(t *testing.T) {
 		payload     string
 	}{
 		// Valid requests return 500 on unit tests because of missing DB
-		{"valid-payload", 500, `page=0&limit=10`},
-		{"valid-payload-random-arg", 500, `page=0&limit=10&version=2.0`},
-		{"valid-payload-missing", 500, ""},
+		{"valid-payload", 503, `page=0&limit=10`},
+		{"valid-payload-random-arg", 503, `page=0&limit=10&version=2.0`},
+		{"valid-payload-missing", 503, ""},
 		{"invalid-payload-negativepage", 400, `page=-1`},
 		{"invalid-payload-zerolimit", 400, `limit=0`},
 		{"invalid-payload-noninteger", 400, `page=a&limit=b`},
